@@ -22,9 +22,6 @@ import qualified Data.Sequence as Seq
 import Kore.Attribute.Pattern.FreeVariables
     ( FreeVariables
     )
-import Kore.Attribute.Axiom
-    ( Axiom (..)
-    )
 import qualified Kore.Internal.Condition as Condition
 import Kore.Internal.Conditional
     ( Conditional (Conditional)
@@ -44,6 +41,9 @@ import qualified Kore.Internal.Substitution as Substitution
 import Kore.Internal.TermLike as TermLike
 import Kore.Log.DebugAppliedRewriteRules
     ( debugAppliedRewriteRules
+    )
+import Kore.Log.DebugRewriteSubstitution
+    ( debugRewriteSubstitution
     )
 import Kore.Log.ErrorRewritesInstantiation
     ( checkSubstitutionCoverage
@@ -73,8 +73,6 @@ import Kore.Step.Step
     , unifyRules
     )
 import qualified Logic
-
-import Debug.Trace (trace)
 
 withoutUnification :: UnifiedRule rule variable -> rule variable
 withoutUnification = Conditional.term
@@ -217,13 +215,7 @@ applyRulesWithFinalizer
     -> simplifier (Results RulePattern VariableName)
 applyRulesWithFinalizer finalize unificationProcedure rules initial = do
     results <- unifyRules unificationProcedure initial rules
-
-    -- print substitution
-    case results of
-        [Conditional { term {-, substitution -} }] ->
-            trace ("applied rewrite rule: " ++ show (uniqueId $ attributes term)) (pure ())
-        _ -> pure ()
-
+    debugRewriteSubstitution results
     debugAppliedRewriteRules initial results
     let initialVariables = freeVariables initial
     finalize initialVariables initial results
