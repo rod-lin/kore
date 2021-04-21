@@ -215,7 +215,7 @@ applyRulesWithFinalizer
     -> simplifier (Results RulePattern VariableName)
 applyRulesWithFinalizer finalize unificationProcedure rules initial = do
     results <- unifyRules unificationProcedure initial rules
-    debugRewriteSubstitution results
+    debugRewriteSubstitution initial results
     debugAppliedRewriteRules initial results
     let initialVariables = freeVariables initial
     finalize initialVariables initial results

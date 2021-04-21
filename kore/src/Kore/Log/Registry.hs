@@ -49,6 +49,9 @@ import Kore.Log.DebugAppliedRewriteRules
 import Kore.Log.DebugRewriteSubstitution
     ( DebugRewriteSubstitution
     )
+import Kore.Log.DebugExecGoal
+    ( DebugExecGoal
+    )
 import Kore.Log.DebugEvaluateCondition
     ( DebugEvaluateCondition
     )
@@ -146,6 +149,7 @@ entryHelpDocs :: [Pretty.Doc ()]
     , mk $ Proxy @DebugProofState
     , mk $ Proxy @DebugAppliedRewriteRules
     , mk $ Proxy @DebugRewriteSubstitution
+    , mk $ Proxy @DebugExecGoal
     , mk $ Proxy @DebugSubstitutionSimplifier
     , mk $ Proxy @ErrorBottomTotalFunction
     , mk $ Proxy @ErrorDecidePredicateUnknown

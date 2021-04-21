@@ -13,6 +13,7 @@ module Kore.Unparser
     , unparse2Generic
     , unparseToText
     , unparseToString
+    , unparseToCompactString
     , renderDefault
     , layoutPrettyUnbounded
     , parameters
@@ -146,6 +147,9 @@ unparseToString = renderDefault . unparse
 
 unparseToString2 :: Unparse p => p -> String
 unparseToString2 = renderDefault . unparse2
+
+unparseToCompactString :: Unparse p => p -> String
+unparseToCompactString = renderString . layoutOneLine . unparse
 
 renderDefault :: Doc ann -> String
 renderDefault = renderString . layoutPretty defaultLayoutOptions

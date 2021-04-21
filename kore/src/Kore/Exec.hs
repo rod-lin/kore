@@ -171,6 +171,9 @@ import Kore.Unparser
     ( unparseToText
     , unparseToText2
     )
+import Kore.Log.DebugExecGoal
+    ( debugExecGoal
+    )
 import Log
     ( MonadLog
     )
@@ -210,7 +213,7 @@ exec breadthLimit verifiedModule strategy initialTerm =
     evalSimplifier verifiedModule' $ do
         initialized <- initialize verifiedModule
         let Initialized { rewriteRules } = initialized
-        (execDepth, finalConfig) <-
+        (execDepth, initialConfig, finalConfig) <-
             getFinalConfigOf $ do
                 initialConfig <-
                     Pattern.simplify SideCondition.top
@@ -231,13 +234,16 @@ exec breadthLimit verifiedModule strategy initialTerm =
                         & runTransitionT
                         & fmap (map fst)
                         & lift
-                Strategy.leavesM
+                (strategies, (execDepth, finalConfig)) <- Strategy.leavesM
                     updateQueue
                     (Strategy.unfoldTransition transit)
                     (strategy rewriteRules, (ExecDepth 0, initialConfig))
+                return (strategies, (execDepth, initialConfig, finalConfig))
+
         infoExecDepth execDepth
         exitCode <- getExitCode verifiedModule finalConfig
         let finalTerm = forceSort initialSort $ Pattern.toTermLike finalConfig
+        debugExecGoal initialTerm finalTerm
         return (exitCode, finalTerm)
   where
     dropStrategy = snd
@@ -248,7 +254,7 @@ exec breadthLimit verifiedModule strategy initialTerm =
         takeFirstResult act =
             Logic.observeT (takeResult <$> lift act) & runMaybeT
         orElseBottom =
-            pure . fromMaybe (ExecDepth 0, Pattern.bottomOf initialSort)
+            pure . fromMaybe (ExecDepth 0, Pattern.bottomOf initialSort, Pattern.bottomOf initialSort)
     verifiedModule' =
         IndexedModule.mapPatterns
             -- TODO (thomas.tuegel): Move this into Kore.Builtin
