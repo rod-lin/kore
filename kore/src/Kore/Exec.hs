@@ -213,7 +213,7 @@ exec breadthLimit verifiedModule strategy initialTerm =
     evalSimplifier verifiedModule' $ do
         initialized <- initialize verifiedModule
         let Initialized { rewriteRules } = initialized
-        (execDepth, initialConfig, finalConfig) <-
+        (execDepth, finalConfig) <-
             getFinalConfigOf $ do
                 initialConfig <-
                     Pattern.simplify SideCondition.top
@@ -234,12 +234,10 @@ exec breadthLimit verifiedModule strategy initialTerm =
                         & runTransitionT
                         & fmap (map fst)
                         & lift
-                (strategies, (execDepth, finalConfig)) <- Strategy.leavesM
+                Strategy.leavesM
                     updateQueue
                     (Strategy.unfoldTransition transit)
                     (strategy rewriteRules, (ExecDepth 0, initialConfig))
-                return (strategies, (execDepth, initialConfig, finalConfig))
-
         infoExecDepth execDepth
         exitCode <- getExitCode verifiedModule finalConfig
         let finalTerm = forceSort initialSort $ Pattern.toTermLike finalConfig
@@ -254,7 +252,7 @@ exec breadthLimit verifiedModule strategy initialTerm =
         takeFirstResult act =
             Logic.observeT (takeResult <$> lift act) & runMaybeT
         orElseBottom =
-            pure . fromMaybe (ExecDepth 0, Pattern.bottomOf initialSort, Pattern.bottomOf initialSort)
+            pure . fromMaybe (ExecDepth 0, Pattern.bottomOf initialSort)
     verifiedModule' =
         IndexedModule.mapPatterns
             -- TODO (thomas.tuegel): Move this into Kore.Builtin
